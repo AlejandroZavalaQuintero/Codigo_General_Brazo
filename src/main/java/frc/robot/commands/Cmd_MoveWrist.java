@@ -8,15 +8,14 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Sub_Arm;
 
-public class Cmd_MoveArm extends CommandBase {
+public class Cmd_MoveWrist extends CommandBase {
   /** Creates a new Cmd_MoveArm. */
   private final Sub_Arm Arm;
   private double Setpoint, Dt, LastDt, I_Zone;
-  private double RightErrorP, RightErrorI, RightErrorD, RightLastError, RightSpeed;
-  private double LeftErrorP, LeftErrorI, LeftErrorD, LeftLastError, LeftSpeed, ErrorTeta;
-  private double kP, kI, kD, kT;
+  private double ErrorP, ErrorI, ErrorD, LastError, Speed;
+  private double kP, kI, kD;
 
-  public Cmd_MoveArm(Sub_Arm arm, double Setpoint) {
+  public Cmd_MoveWrist(Sub_Arm arm, double Setpoint) {
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
     this.Arm = arm;
@@ -28,18 +27,11 @@ public class Cmd_MoveArm extends CommandBase {
   public void initialize() {
     // Reinicio e inicializacion de variables
     resetAll();
-    kP = 2.7;
-    kI = 0.5;
-    kD = 0.03;
-    if (Setpoint > 0.27) {
-      Setpoint = 0.27;
-    }
-    if (Setpoint < 0.05) {
-      Setpoint = 0.05;
-    }
-
+    kP = 0.009;
+    kI = 0.008;
+    kD = 0.0022;
     // Chasis.CalibrateMaxVoltage();
-    Arm.SetOpenLoopedSArm(1);
+    Arm.SetOpenLoopedSWrist(1);
 
   }
 
@@ -51,36 +43,26 @@ public class Cmd_MoveArm extends CommandBase {
     Dt = Timer.getFPGATimestamp() - LastDt;
 
     // P
-    RightErrorP = Setpoint - Arm.getArmGenEncoder();
-    LeftErrorP = Setpoint - Arm.getArmGenEncoder();
+    ErrorP = Setpoint - Arm.getWristEncoder();
 
     // I
-    if (Math.abs(RightErrorP) <= I_Zone) {
-      RightErrorI += RightErrorP * Dt;
+    if (Math.abs(ErrorP) <= I_Zone) {
+      ErrorI += ErrorP * Dt;
     } else {
-      RightErrorI = 0;
-    }
-    if (Math.abs(LeftErrorP) <= I_Zone) {
-      LeftErrorI += LeftErrorP * Dt;
-    } else {
-      LeftErrorI = 0;
+      ErrorI = 0;
     }
 
     // D
-    RightErrorD = (RightErrorP - RightLastError) / Dt;
-    LeftErrorD = (LeftErrorP - LeftLastError) / Dt;
+    ErrorD = (ErrorP - LastError) / Dt;
 
     // Control de velocidad
-    RightSpeed = (RightErrorP * kP) + (RightErrorI * kI) + (RightErrorD * kD);
-    LeftSpeed = (LeftErrorP * kP) + (LeftErrorI * kI) + (LeftErrorD * kD);
+    Speed = (ErrorP * kP) + (ErrorI * kI) + (ErrorD * kD);
 
     // Set a los motores
-    Arm.setSpeedArm(RightSpeed, RightSpeed);
-    System.out.println(RightSpeed);
+    Arm.setSpeedWrist(Speed);
 
     // Retroalimentacion de errores y tiempos
-    RightLastError = RightErrorP;
-    LeftLastError = LeftErrorP;
+    LastError = ErrorP;
     LastDt = Timer.getFPGATimestamp();
   }
 
@@ -102,9 +84,9 @@ public class Cmd_MoveArm extends CommandBase {
      * return true; }else{ return false; }
      */
 
-    if (Math.abs(Arm.getLeftArmEncoder()) == Math.abs(Setpoint)) {
+    if (Math.abs(Arm.getWristEncoder()) == Math.abs(Setpoint)) {
       Arm.SetOpenLoopedSArm(0);
-      Arm.setSpeedArm(0, 0);
+      Arm.setSpeedWrist(0);
 
       return true;
     } else {
@@ -115,16 +97,11 @@ public class Cmd_MoveArm extends CommandBase {
   public void resetAll() {
     Dt = 0;
     LastDt = 0;
-    I_Zone = Math.abs(Setpoint * 0.2);
-    RightErrorP = 0;
-    RightErrorI = 0;
-    RightErrorD = 0;
-    RightLastError = 0;
-    RightSpeed = 0;
-    LeftErrorP = 0;
-    LeftErrorI = 0;
-    LeftErrorD = 0;
-    LeftLastError = 0;
-    LeftSpeed = 0;
+    I_Zone = Math.abs(Setpoint * 0.15);
+    ErrorP = 0;
+    ErrorI = 0;
+    ErrorD = 0;
+    LastError = 0;
+    Speed = 0;
   }
 }

@@ -45,14 +45,18 @@ public class Cmd_ManualArm extends CommandBase {
       Arm.setSpeedArm(up, up);
     } else {
       Arm.setSpeedArm(0, 0);
+
     }
 
     if (botonY.get()) {
       Arm.resetEncodersArm();
     }
 
-    if (Joystick.get() > 0.25) {
+    if (Math.abs(Joystick.get()) > 0.25) {
       Arm.setSpeedWrist(0.5 * (Joystick.get()));
+      
+    } else {
+      Arm.setSpeedWrist(0);
     }
 
   }

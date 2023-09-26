@@ -40,6 +40,7 @@ public class Sub_Arm extends SubsystemBase {
     EncoderR.setPositionConversionFactor(1 / 194.4);
     RightArmMotor.setIdleMode(IdleMode.kBrake);
     LeftArmMotor.setIdleMode(IdleMode.kBrake);
+    WristMotor.setIdleMode(IdleMode.kBrake);
 
   }
 
@@ -93,7 +94,6 @@ public class Sub_Arm extends SubsystemBase {
     double pond = 1;
 
     pond = 1 - (0.8 / 0.1908595) * Math.abs(getArmGenEncoder() - 0.1278335);
-    System.out.println("Pond " + pond);
 
     if (Math.abs(LeftSpeed) >= 0.8) {
       LeftSpeed = (LeftSpeed / Math.abs(LeftSpeed)) * 0.8;
@@ -117,10 +117,10 @@ public class Sub_Arm extends SubsystemBase {
 
   public void setSpeedWrist(double Wristspeed) {
     if (Math.abs(Wristspeed) >= 0.8) {
-      Wristspeed = (Wristspeed / Math.abs(Wristspeed)) * 0.9;
+      Wristspeed = (Wristspeed / Math.abs(Wristspeed)) * 0.8;
     }
 
-    WristMotor.set(Wristspeed * .5);
+    WristMotor.set(Wristspeed);
   }
 
   public void SetOpenLoopedSArm(double S) {
@@ -129,7 +129,7 @@ public class Sub_Arm extends SubsystemBase {
   }
 
   public void SetOpenLoopedSWrist(double S) {
-    // WristMotor.setClosedLoopRampRate(S);
+    WristMotor.setClosedLoopRampRate(S);
   }
 
   public void disablemotors() {
